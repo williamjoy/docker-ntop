@@ -1,25 +1,23 @@
-FROM debian:bullseye-slim
+FROM  --platform=linux/arm64/v8 debian:bullseye-slim
 
 RUN apt-get update \
-	&& apt-get -y -q install \
+	&& apt-get -y install \
 		software-properties-common \
 		wget \
 		lsb-release \
 		gnupg \
 		libelf1 \
-	&& wget -q http://packages.ntop.org/RaspberryPI/apt-ntop.deb \
-	&& apt-get -y -q install ./apt-ntop.deb \
+    iputils-ping bash-completion vim ack sudo tree lsof psmisc htop strace net-tools procps \
+	&& wget http://packages.ntop.org/RaspberryPI/apt-ntop.deb \
+	&& apt-get -y install --no-install-recommends ./apt-ntop.deb \
 	&& rm ./apt-ntop.deb \
-	&& apt-get update \
-	&& apt-get -y -q install \
+	&& apt-get update -y
+RUN apt-get -y install --no-install-recommends \
 		ntopng \
 		libcap2 \
-		libzstd1 \
-	&& apt-get clean all \
-	&& rm -rf /var/lib/apt/lists/*
-
-RUN echo '#!/bin/bash\n/etc/init.d/redis-server start\nntopng "$@" $NTOP_CONFIG' > /run.sh \
-	&& chmod +x /run.sh
+		libzstd1 || true
+#RUN apt-get clean all 	&& rm -rf /var/lib/apt/lists/*
+COPY /rootfs/run.sh /run.sh
 
 EXPOSE 3000
 
